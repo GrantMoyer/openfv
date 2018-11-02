@@ -59,6 +59,8 @@ RUN apt-get update -qq && apt-get -yq dist-upgrade && \
         qt5-default \
         libqt5opengl5 \
         x11-apps \
+        gv \
+        dot \
         cmake \
         build-essential \
         gdb \

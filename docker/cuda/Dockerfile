@@ -33,13 +33,16 @@ RUN git clone https://github.com/abhishekbajpayee/openfv.git && \
 # RUN rm -rf *.zip ceres-solver* gflags glog opencv* openfv
 RUN rm -rf *.zip gflags glog opencv* openfv
 
+USER $NB_USER
+
 # Download sample data
 RUN git clone https://github.com/abhishekbajpayee/openfv-sample-data.git
 
 # Download and test sample
-RUN git clone https://github.com/abhishekbajpayee/openfv-samples.git && cd openfv-samples && \
-        mkdir bin && cd bin && cmake .. && make
+RUN git clone https://github.com/abhishekbajpayee/openfv-samples.git && cd openfv-samples # && \
+        # mkdir bin && cd bin && cmake .. && make
 
+USER root
 # Add local files as late as possible to avoid cache busting
 COPY start.sh /usr/local/bin/
 COPY start-notebook.sh /usr/local/bin/

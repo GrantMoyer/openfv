@@ -39,8 +39,9 @@ USER $NB_USER
 RUN git clone https://github.com/abhishekbajpayee/openfv-sample-data.git
 
 # Download and test sample
-RUN git clone https://github.com/abhishekbajpayee/openfv-samples.git && cd openfv-samples # && \
-        # mkdir bin && cd bin && cmake .. && make
+RUN git clone https://github.com/abhishekbajpayee/openfv-samples.git # && \
+    # cd openfv-samples && \
+    # mkdir bin && cd bin && cmake .. && make
 
 USER root
 # Add local files as late as possible to avoid cache busting
@@ -49,9 +50,9 @@ COPY start-notebook.sh /usr/local/bin/
 COPY start-singleuser.sh /usr/local/bin/
 COPY jupyter_notebook_config.py /home/$NB_USER/.jupyter/
 
+# Switch back to jovyan to avoid accidental container runs as root
+USER $NB_USER
+
 # Configure ipython kernel to use matplotlib inline backend by default
 RUN mkdir -p $HOME/.ipython/profile_default/startup
 COPY mplimporthook.py $HOME/.ipython/profile_default/startup/
-
-# Switch back to jovyan to avoid accidental container runs as root
-USER $NB_USER

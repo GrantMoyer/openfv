@@ -23,6 +23,8 @@
 
 FROM openfv/openfv-base
 
+RUN apt-get update -qq && apt-get install -qq --no-install-recommends libglfw-dev
+
 # Install openfv
 RUN git clone https://github.com/abhishekbajpayee/openfv.git && \
     cd openfv && ./configure && cd bin && \

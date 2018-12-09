@@ -21,9 +21,7 @@
 # You should have received a copy of the GNU General Public License version 2 along with
 # OpenFV. If not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html.
 
-FROM openfv/openfv-base
-
-RUN apt-get update -qq && apt-get install -qq --no-install-recommends libglfw-dev
+FROM openfv/openfv-base:opengl
 
 # Install openfv
 RUN git clone https://github.com/abhishekbajpayee/openfv.git && \

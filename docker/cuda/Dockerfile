@@ -21,14 +21,14 @@
 # You should have received a copy of the GNU General Public License version 2 along with
 # OpenFV. If not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html.
 
-FROM openfv/openfv-cuda-base
+FROM openfv/openfv-cuda-base:opengl
 
 # Install openfv
 RUN git clone https://github.com/abhishekbajpayee/openfv.git && \
-        cd openfv && ./configure && cd bin && \
-        cmake -D BUILD_PYTHON=ON -D PYTHON_EXEC=/opt/conda/envs/python2/bin/python -D WITH_CUDA=ON \
+    cd openfv && ./configure && cd bin && \
+    cmake -D CMAKE_BUILD_TYPE=debug -D BUILD_PYTHON=ON -D PYTHON_EXEC=/opt/conda/envs/python2/bin/python -D WITH_CUDA=ON \
         -D NUMPY_INC_DIR=/opt/conda/envs/python2/lib/python2.7/site-packages/numpy/core/include ..  && \
-        make && make install
+    make && make install
 
 # RUN rm -rf *.zip ceres-solver* gflags glog opencv* openfv
 RUN rm -rf *.zip gflags glog opencv* openfv

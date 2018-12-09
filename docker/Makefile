@@ -32,16 +32,16 @@ remove-untagged-images:
 	@-(docker rmi $$(docker images | grep "<none>" | awk '{print $3}')) 2> /dev/null
 
 build-image-base:
-	@docker build -t openfv/openfv-base -f Dockerfile.base .
+	@docker build -t openfv/openfv-base:opengl -f Dockerfile.base .
 
 build-cuda-image-base:
-	@-(cd cuda && nvidia-docker build -t openfv/openfv-cuda-base -f Dockerfile.base .)
+	@-(cd cuda && nvidia-docker build -t openfv/openfv-cuda-base:opengl -f Dockerfile.base .)
 
 build-image: build-image-base
-	@-(docker build --no-cache -t openfv/openfv .)
+	@-(docker build --no-cache -t openfv/openfv:opengl .)
 
 build-cuda-image: build-cuda-image-base
-	@-(cd cuda && nvidia-docker build --no-cache -t openfv/openfv-cuda .)
+	@-(cd cuda && nvidia-docker build --no-cache -t openfv/openfv-cuda:opengl .)
 
 pull-images:
 	@docker pull openfv/openfv

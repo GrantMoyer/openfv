@@ -59,50 +59,51 @@ ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
 # and OpenFV dependencies
 RUN apt-get update -qq && apt-get -yq dist-upgrade && \
     apt-get install -yq --no-install-recommends \
-    wget \
-    bzip2 \
-    ca-certificates \
-    sudo \
-    locales \
-    git \
-    vim \
-    jed \
-    emacs \
-    build-essential \
-    python-dev \
-    unzip \
-    libsm6 \
-    pandoc \
-    texlive-latex-base \
-    texlive-latex-extra \
-    texlive-fonts-extra \
-    texlive-fonts-recommended \
-    texlive-generic-recommended \
-    texlive-xetex \
-    libxrender1 \
-    inkscape \
-    libav-tools \
-    libx11-xcb-dev \
-    mesa-common-dev \
-    libglu1-mesa-dev \
-    qt5-default \
-    libqt5opengl5 \
-    x11-apps \
-    graphviz \
-    gdb \
-    cmake \
-    build-essential \
-    libboost-all-dev \
-    libgoogle-perftools-dev \
-    google-perftools \
-    libeigen3-dev \
-    libatlas-base-dev \
-    libsuitesparse-dev \
-    libtiff5-dev \
-    libyaml-cpp-dev \
-    autoconf \
-    automake \
-    libtool && \
+        wget \
+        bzip2 \
+        ca-certificates \
+        sudo \
+        locales \
+        git \
+        vim \
+        jed \
+        emacs \
+        build-essential \
+        python-dev \
+        unzip \
+        libsm6 \
+        pandoc \
+        texlive-latex-base \
+        texlive-latex-extra \
+        texlive-fonts-extra \
+        texlive-fonts-recommended \
+        texlive-generic-recommended \
+        texlive-xetex \
+        libxrender1 \
+        inkscape \
+        libav-tools \
+        libx11-xcb-dev \
+        mesa-common-dev \
+        libglu1-mesa-dev \
+        qt5-default \
+        libqt5opengl5 \
+        x11-apps \
+        graphviz \
+        cmake \
+        build-essential \
+        gdb \
+        libboost-all-dev \
+        libgoogle-perftools-dev \
+        google-perftools \
+        libeigen3-dev \
+        libatlas-base-dev \
+        libsuitesparse-dev \
+        libtiff5-dev \
+        libyaml-cpp-dev \
+        libglfw-dev \
+        autoconf \
+        automake \
+        libtool && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -121,8 +122,8 @@ RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.10.0/tini 
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
     NB_USER=jovyan \
-    NB_UID=1000 \
-    NB_GID=100 \
+    NB_UID=1003 \
+    NB_GID=1004 \
     LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
@@ -133,7 +134,8 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH \
 ADD fix-permissions /usr/local/bin/fix-permissions
 
 # Create jovyan user with UID=1000 and in the 'users' group
-RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+RUN groupadd -g $NB_GID jovyan && \
+    useradd -m -s /bin/bash -N -u $NB_UID -g $NB_GID $NB_USER && \
     mkdir -p $CONDA_DIR && \
     chown $NB_USER:$NB_GID $CONDA_DIR && \
     fix-permissions $HOME && \

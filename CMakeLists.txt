@@ -136,7 +136,7 @@ include_directories( ${NUMPY_INC_DIR} )
 # doesn't link to Qt
 # include_directories( "/opt/Qt/5.4/gcc_64/include" )
 
-set(OTHER_LIBS ${TIFF_LIBRARIES} ${Boost_GENERAL} ${Boost_PY} yaml-cpp glog gflags)
+set(OTHER_LIBS ${TIFF_LIBRARIES} ${Boost_GENERAL} ${Boost_PY} yaml-cpp glog gflags glfw)
 if(WITH_CUDA)
   set(OTHER_LIBS ${OTHER_LIBS})
   set (OFV_LIBS openfv cuda_openfv)

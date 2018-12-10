@@ -58,9 +58,7 @@ using namespace cv;
 class saRefocus {
 
  public:
-    ~saRefocus() {
-
-    }
+    ~saRefocus();
 
     saRefocus();
 

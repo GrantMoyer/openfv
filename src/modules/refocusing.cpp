@@ -32,12 +32,16 @@
 // -------------------------------------------------------
 // -------------------------------------------------------
 
+#include <GL/glfw.h>
+
 #include "refocusing.h"
 #include "tools.h"
 
 using namespace std;
 using namespace cv;
 using namespace libtiff;
+
+void initGLFW();
 
 saRefocus::saRefocus() {
 
@@ -72,6 +76,7 @@ saRefocus::saRefocus() {
     cxs_ = 0; cys_ = 0; czs_ = 0;
     crx_ = 0; cry_ = 0; crz_ = 0;
 
+    initGLFW();
 }
 
 saRefocus::saRefocus(int num_cams, double f) {
@@ -96,6 +101,7 @@ saRefocus::saRefocus(int num_cams, double f) {
     BENCHMARK_MODE = 0;
     INT_IMG_MODE = 0;
 
+    initGLFW();
 }
 
 saRefocus::saRefocus(refocus_settings settings):
@@ -159,6 +165,20 @@ saRefocus::saRefocus(refocus_settings settings):
     cxs_ = 0; cys_ = 0; czs_ = 0;
     crx_ = 0; cry_ = 0; crz_ = 0;
 
+    initGLFW();
+}
+
+void initGLFW() {
+    if (!glfwInit()) {
+        LOG(FATAL) << "FAILED TO INITIALIZE GLFW";
+        exit(1);
+    }
+    LOG(INFO)<<"INITIALIZED GLFW...";
+}
+
+saRefocus::~saRefocus() {
+    glfwTerminate();
+    LOG(INFO)<<"TERMINATED GLFW!";
 }
 
 void saRefocus::read_calib_data(string path) {

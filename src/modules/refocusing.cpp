@@ -1356,6 +1356,7 @@ int width = img_size_.width / 2, height = img_size_.height / 2;
     Mat H, trans;
     calc_refocus_H(0, H);
     GLfloat Htbuf[4][4] = {};
+    GLuint *textures = new GLuint[num_cams_];
 
     for (int r = 0; r < 3; ++r) {
 	    for (int c = 0; c < 3; ++c) {
@@ -1364,10 +1365,20 @@ int width = img_size_.width / 2, height = img_size_.height / 2;
     }
     Htbuf[3][3] = 1.0;
 
+    unsigned char tex[][4] = {{0, 0, 255, 255}, {0, 0, 255, 255}, {255, 255, 0, 0}, {255, 255, 0, 0}};
+
 for (int i = 0; i < 1; ++i) {
 double t = glfwGetTime();
         // Get window size (may be different than the requested size)
         glfwGetWindowSize( &width, &height );
+        glGenTextures(1, &textures[0]);
+        glBindTexture(GL_TEXTURE_2D, textures[0]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 4, 4, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, tex);
+
 
         // Special case: avoid division by zero below
         height = height > 0 ? height : 1;
@@ -1377,6 +1388,7 @@ double t = glfwGetTime();
         // Clear color buffer to black
         glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
         glClear( GL_COLOR_BUFFER_BIT );
+
 
         // Select and setup the projection matrix
         glMatrixMode( GL_PROJECTION );
@@ -1394,18 +1406,21 @@ double t = glfwGetTime();
         //           0.0f, 1.0f, 0.0f );  // Up-vector
 
         // Draw a rotating colorful triangle
-        glBegin( GL_POLYGON );
-          glColor3f( 1.0f, 0.0f, 0.0f );
-          glVertex3f(    0.0f,   0.0f,  1.0f );
+        glEnable(GL_TEXTURE_2D);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+        glBindTexture(GL_TEXTURE_2D, textures[0]);
+        glBegin( GL_QUADS );
+          glTexCoord2f(0.0f, 0.0f);
+          glVertex3f(0.0f, 0.0f, 1.0f);
 
-          glColor3f( 0.0f, 1.0f, 0.0f );
-          glVertex3f( 1292.0f,   0.0f,  1.0f );
+          glTexCoord2f(1.0f, 0.0f);
+          glVertex3f(1292.0f, 0.0f, 1.0f);
 
-          glColor3f( 0.0f, 0.0f, 1.0f );
-          glVertex3f( 1292.0f, 964.0f,  1.0f );
+          glTexCoord2f(1.0f, 1.0f);
+          glVertex3f(1292.0f, 964.0f, 1.0f);
 
-          glColor3f( 1.0f, 0.0f, 1.0f );
-          glVertex3f(    0.0f, 964.0f,  1.0f );
+          glTexCoord2f(0.0f, 1.0f);
+          glVertex3f(0.0f, 964.0f, 1.0f);
         glEnd();
 
         // Swap buffers
@@ -1451,6 +1466,7 @@ double t = glfwGetTime();
 
     result_ = refocused_host_.clone();
 
+    delete[] textures;
 }
 
 void saRefocus::CPUrefocus_ref(int live, int frame) {

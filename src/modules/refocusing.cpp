@@ -1346,9 +1346,7 @@ void saRefocus::updateLiveFrame() {
 // ---CPU Refocusing Functions Begin--- //
 
 void saRefocus::CPUrefocus(int live, int frame) {
-int width = img_size_.width / 2, height = img_size_.height / 2;
 
-	glfwSetWindowSize(width, height);
 
 
     Scalar fact = Scalar(1/double(num_cams_));
@@ -1356,7 +1354,6 @@ int width = img_size_.width / 2, height = img_size_.height / 2;
     Mat H, trans;
     calc_refocus_H(0, H);
     GLfloat Htbuf[4][4] = {};
-    GLuint *textures = new GLuint[num_cams_];
 
     for (int r = 0; r < 3; ++r) {
 	    for (int c = 0; c < 3; ++c) {
@@ -1365,51 +1362,83 @@ int width = img_size_.width / 2, height = img_size_.height / 2;
     }
     Htbuf[3][3] = 1.0;
 
-    unsigned char tex[][4] = {{0, 0, 255, 255}, {0, 0, 255, 255}, {255, 255, 0, 0}, {255, 255, 0, 0}};
-
-for (int i = 0; i < 1; ++i) {
-double t = glfwGetTime();
-        // Get window size (may be different than the requested size)
-        glfwGetWindowSize( &width, &height );
-        glGenTextures(1, &textures[0]);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 4, 4, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, tex);
+	double t = glfwGetTime();
+    // Get window size (may be different than the requested size)
+	int width, height;
+    glfwGetWindowSize( &width, &height );
 
 
-        // Special case: avoid division by zero below
-        height = height > 0 ? height : 1;
+    // Special case: avoid division by zero below
+    height = height > 0 ? height : 1;
 
-        glViewport( 0, 0, width, height );
+    glViewport( 0, 0, width, height );
 
-        // Clear color buffer to black
-        glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-        glClear( GL_COLOR_BUFFER_BIT );
+    // Clear color buffer to black
+    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+    glClear( GL_COLOR_BUFFER_BIT );
 
 
-        // Select and setup the projection matrix
-        glMatrixMode( GL_PROJECTION );
-        glLoadIdentity();
-        //glOrtho(0, 1292, 0, 964, -2, 0);
-        glFrustum(0, 1292.0 * 0.1, 0, 964.0 * 0.1, 1.0 * 0.1, 2);
-        glScalef(1, 1, -1);
+    // Select and setup the projection matrix
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+    //glOrtho(0, 1292, 0, 964, -2, 0);
+    glFrustum(0, 1292.0 * 0.1, 0, 964.0 * 0.1, 1.0 * 0.1, 2);
+    glScalef(1, 1, -1);
 
-        // Select and setup the modelview matrix
-        glMatrixMode( GL_MODELVIEW );
+    // Select and setup the modelview matrix
+    glMatrixMode( GL_MODELVIEW );
+    glLoadMatrixf((GLfloat *) Htbuf);
+    //glLoadIdentity();
+    //gluLookAt( 0, 0, 0.0f,    // Eye-position
+    //           0, 0, -1.0f,   // View-point
+    //           0.0f, 1.0f, 0.0f );  // Up-vector
+
+    // Draw a rotating colorful triangle
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glBegin( GL_QUADS );
+      glColor4f(1,1,1,1);
+      glTexCoord2f(0.0f, 0.0f);
+      glVertex3f(0.0f, 0.0f, 1.0f);
+
+      glTexCoord2f(1.0f, 0.0f);
+      glVertex3f(1292.0f, 0.0f, 1.0f);
+
+      glTexCoord2f(1.0f, 1.0f);
+      glVertex3f(1292.0f, 964.0f, 1.0f);
+
+      glTexCoord2f(0.0f, 1.0f);
+      glVertex3f(0.0f, 964.0f, 1.0f);
+    glEnd();
+
+	//warpPerspective(imgs[0][frame], cputemp, H, img_size_);
+    // qimshow(cputemp);
+
+//    if (mult_) {
+//        pow(cputemp, mult_exp_, cputemp2);
+//    } else if (minlos_) {
+//        cputemp2 = cputemp.clone();
+//    } else {
+//        multiply(cputemp, fact, cputemp2);
+//    }
+
+//    cpurefocused = cputemp2.clone();
+
+    for (int i=1; i<num_cams_; i++) {
+	    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        calc_refocus_H(i, H);
+	    for (int r = 0; r < 3; ++r) {
+		    for (int c = 0; c < 3; ++c) {
+			    Htbuf[c][r] = H.at<double>(r, c);
+		    }
+	    }
         glLoadMatrixf((GLfloat *) Htbuf);
-        //glLoadIdentity();
-        //gluLookAt( 0, 0, 0.0f,    // Eye-position
-        //           0, 0, -1.0f,   // View-point
-        //           0.0f, 1.0f, 0.0f );  // Up-vector
-
-        // Draw a rotating colorful triangle
-        glEnable(GL_TEXTURE_2D);
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
         glBegin( GL_QUADS );
+          glColor4f(1, 1, 1, 1.0/(1+i));
           glTexCoord2f(0.0f, 0.0f);
           glVertex3f(0.0f, 0.0f, 1.0f);
 
@@ -1422,51 +1451,29 @@ double t = glfwGetTime();
           glTexCoord2f(0.0f, 1.0f);
           glVertex3f(0.0f, 964.0f, 1.0f);
         glEnd();
-
-        // Swap buffers
-        glfwSwapBuffers();
-    }
-
-	warpPerspective(imgs[0][frame], cputemp, H, img_size_);
-    // qimshow(cputemp);
-
-    if (mult_) {
-        pow(cputemp, mult_exp_, cputemp2);
-    } else if (minlos_) {
-        cputemp2 = cputemp.clone();
-    } else {
-        multiply(cputemp, fact, cputemp2);
-    }
-
-    cpurefocused = cputemp2.clone();
-
-    for (int i=1; i<num_cams_; i++) {
-
-        calc_refocus_H(i, H);
-        warpPerspective(imgs[i][frame], cputemp, H, img_size_);
+//        warpPerspective(imgs[i][frame], cputemp, H, img_size_);
         // qimshow(cputemp);
 
-        if (mult_) {
-            pow(cputemp, mult_exp_, cputemp2);
-            multiply(cpurefocused, cputemp2, cpurefocused);
-	} else if (minlos_) {
-	    min(cputemp,cpurefocused,cpurefocused);
-        } else {
-            multiply(cputemp, fact, cputemp2);
-            add(cpurefocused, cputemp2, cpurefocused);
-        }
-    }
+//         if (mult_) {
+//             pow(cputemp, mult_exp_, cputemp2);
+//             multiply(cpurefocused, cputemp2, cpurefocused);
+// 	} else if (minlos_) {
+// 	    min(cputemp,cpurefocused,cpurefocused);
+//         } else {
+//             multiply(cputemp, fact, cputemp2);
+//             add(cpurefocused, cputemp2, cpurefocused);
+//         }
+     }
 
-    threshold(cpurefocused, cpurefocused, thresh_, 0, THRESH_TOZERO);
+//    threshold(cpurefocused, cpurefocused, thresh_, 0, THRESH_TOZERO);
 
-    Mat refocused_host_(cpurefocused);
+//    Mat refocused_host_(cpurefocused);
 
+    glfwSwapBuffers();
     if (live)
         liveViewWindow(refocused_host_);
 
-    result_ = refocused_host_.clone();
-
-    delete[] textures;
+    result_ = imgs[0][frame].clone(); // refocused_host_.clone();
 }
 
 void saRefocus::CPUrefocus_ref(int live, int frame) {
@@ -1928,18 +1935,31 @@ void saRefocus::dump_stack(string path, double zmin, double zmax, double dz, dou
             }
         }
 #endif
+		glfwSetWindowSize(img_size_.width / 2, img_size_.height / 2);
+	    textures = new GLuint[num_cams_];
+        glGenTextures(num_cams_, &textures[0]);
+	    for (int i = 0; i < num_cams_; ++i) {
+	        glBindTexture(GL_TEXTURE_2D, textures[i]);
+	        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1292, 964, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, imgs[i][frames_.at(f)].data);
+	    }
         if (!GPU_FLAG) {
             for (double z=zmin; z<=zmax; z+=dz) {
                 Mat img = refocus(z, 0, 0, 0, thresh, frames_[f]);
                 stack.push_back(img);
             }
         }
+        glDeleteTextures(num_cams_, textures);
 
 
         imageIO io(fn.str());
         io<<stack; stack.clear();
 
     }
+    delete[] textures;
 
     LOG(INFO)<<"SAVING COMPLETE!"<<endl;
 

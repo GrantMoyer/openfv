@@ -168,10 +168,15 @@ saRefocus::saRefocus(refocus_settings settings):
 
 void saRefocus::initGLFW() {
     if (!glfwInit()) {
-        LOG(FATAL) << "FAILED TO INITIALIZE GLFW";
+        LOG(FATAL) << "FAILED TO INITIALIZE GLFW!";
         exit(1);
     }
-    context = glfwOpenWindow(1, 1, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
+    if(!glfwOpenWindow(1, 1, 0, 0, 0, 0, 0, 0, GLFW_WINDOW)) {
+        LOG(FATAL) << "FAILED TO OPEN GLFW WINDOW!";
+	    glfwTerminate();
+        exit(1);
+    }
+    glfwSetWindowTitle("Scratch Buffer");
     int major, minor, rev;
     glfwGetGLVersion(&major, &minor, &rev);
     LOG(INFO)<<"INITIALIZED GLFW, OPENGL VERSION "
@@ -1341,12 +1346,73 @@ void saRefocus::updateLiveFrame() {
 // ---CPU Refocusing Functions Begin--- //
 
 void saRefocus::CPUrefocus(int live, int frame) {
+int width = img_size_.width / 2, height = img_size_.height / 2;
+
+	glfwSetWindowSize(width, height);
+
 
     Scalar fact = Scalar(1/double(num_cams_));
 
     Mat H, trans;
     calc_refocus_H(0, H);
-    warpPerspective(imgs[0][frame], cputemp, H, img_size_);
+    GLfloat Htbuf[4][4] = {};
+
+    for (int r = 0; r < 3; ++r) {
+	    for (int c = 0; c < 3; ++c) {
+		    Htbuf[c][r] = H.at<double>(r, c);
+	    }
+    }
+    Htbuf[3][3] = 1.0;
+
+for (int i = 0; i < 1; ++i) {
+double t = glfwGetTime();
+        // Get window size (may be different than the requested size)
+        glfwGetWindowSize( &width, &height );
+
+        // Special case: avoid division by zero below
+        height = height > 0 ? height : 1;
+
+        glViewport( 0, 0, width, height );
+
+        // Clear color buffer to black
+        glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+        glClear( GL_COLOR_BUFFER_BIT );
+
+        // Select and setup the projection matrix
+        glMatrixMode( GL_PROJECTION );
+        glLoadIdentity();
+        //glOrtho(0, 1292, 0, 964, -2, 0);
+        glFrustum(0, 1292.0 * 0.1, 0, 964.0 * 0.1, 1.0 * 0.1, 2);
+        glScalef(1, 1, -1);
+
+        // Select and setup the modelview matrix
+        glMatrixMode( GL_MODELVIEW );
+        glLoadMatrixf((GLfloat *) Htbuf);
+        //glLoadIdentity();
+        //gluLookAt( 0, 0, 0.0f,    // Eye-position
+        //           0, 0, -1.0f,   // View-point
+        //           0.0f, 1.0f, 0.0f );  // Up-vector
+
+        // Draw a rotating colorful triangle
+        glBegin( GL_POLYGON );
+          glColor3f( 1.0f, 0.0f, 0.0f );
+          glVertex3f(    0.0f,   0.0f,  1.0f );
+
+          glColor3f( 0.0f, 1.0f, 0.0f );
+          glVertex3f( 1292.0f,   0.0f,  1.0f );
+
+          glColor3f( 0.0f, 0.0f, 1.0f );
+          glVertex3f( 1292.0f, 964.0f,  1.0f );
+
+          glColor3f( 1.0f, 0.0f, 1.0f );
+          glVertex3f(    0.0f, 964.0f,  1.0f );
+        glEnd();
+
+        // Swap buffers
+        glfwSwapBuffers();
+    }
+
+	warpPerspective(imgs[0][frame], cputemp, H, img_size_);
     // qimshow(cputemp);
 
     if (mult_) {

@@ -41,8 +41,6 @@ using namespace std;
 using namespace cv;
 using namespace libtiff;
 
-void initGLFW();
-
 saRefocus::saRefocus() {
 
     LOG(INFO)<<"Refocusing object created in expert mode";
@@ -168,12 +166,16 @@ saRefocus::saRefocus(refocus_settings settings):
     initGLFW();
 }
 
-void initGLFW() {
+void saRefocus::initGLFW() {
     if (!glfwInit()) {
         LOG(FATAL) << "FAILED TO INITIALIZE GLFW";
         exit(1);
     }
-    LOG(INFO)<<"INITIALIZED GLFW...";
+    context = glfwOpenWindow(1, 1, 0, 0, 0, 0, 0, 0, GLFW_WINDOW);
+    int major, minor, rev;
+    glfwGetGLVersion(&major, &minor, &rev);
+    LOG(INFO)<<"INITIALIZED GLFW, OPENGL VERSION "
+             << major << '.' << minor << '-' << rev << "...";
 }
 
 saRefocus::~saRefocus() {

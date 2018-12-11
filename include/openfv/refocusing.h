@@ -223,6 +223,9 @@ class saRefocus {
     void threshold_image(GpuMat &refocused);
 #endif
 
+    // initialize GLFW and OpenGL context
+    void initGLFW();
+
     // Refocusing result
     Mat result_;
 
@@ -302,6 +305,8 @@ class saRefocus {
     int UNDISTORT_IMAGES;
     bool GPU_MATS_UPLOADED;
 
+    // OpenGL context
+    int context;
 };
 
 #endif

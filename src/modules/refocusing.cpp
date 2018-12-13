@@ -1953,10 +1953,15 @@ void saRefocus::dump_stack(string path, double zmin, double zmax, double dz, dou
 	        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1292, 964, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, imgs[i][frames_.at(f)].data);
 	    }
         if (!GPU_FLAG) {
+            // Record start time
+            boost::chrono::high_resolution_clock::time_point t0 = boost::chrono::high_resolution_clock::now();
             for (double z=zmin; z<=zmax; z+=dz) {
                 Mat img = refocus(z, 0, 0, 0, thresh, frames_[f]);
                 stack.push_back(img);
             }
+            // Calculate the duration & print
+            boost::chrono::duration<double> t1 = boost::chrono::high_resolution_clock::now() - t0;
+            LOG(INFO) << "OpenGL Frame refocus took " << t1 << std::endl;
         }
         glDeleteTextures(num_cams_, textures);
 

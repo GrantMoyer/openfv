@@ -1467,9 +1467,15 @@ void saRefocus::CPUrefocus(int live, int frame) {
 
 //    threshold(cpurefocused, cpurefocused, thresh_, 0, THRESH_TOZERO);
 
-//    Mat refocused_host_(cpurefocused);
-
     glfwSwapBuffers();
+
+
+    Mat ref(1292, 964, CV_8UC3);
+    glReadPixels(0, 0, 1292, 964, GL_RGB, GL_UNSIGNED_BYTE, ref.data);
+
+    Mat refocused_host_(cpurefocused);
+    cvtColor(ref, refocused_host_, CV_RGB2GRAY);
+
     if (live)
         liveViewWindow(refocused_host_);
 
@@ -1935,7 +1941,7 @@ void saRefocus::dump_stack(string path, double zmin, double zmax, double dz, dou
             }
         }
 #endif
-		glfwSetWindowSize(img_size_.width / 2, img_size_.height / 2);
+		glfwSetWindowSize(img_size_.width, img_size_.height);
 	    textures = new GLuint[num_cams_];
         glGenTextures(num_cams_, &textures[0]);
 	    for (int i = 0; i < num_cams_; ++i) {

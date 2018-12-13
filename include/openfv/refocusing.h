@@ -48,6 +48,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <GL/glfw.h>
+
 using namespace std;
 using namespace cv;
 
@@ -307,6 +309,7 @@ class saRefocus {
 
     // OpenGL context
     int context;
+    GLuint *textures;
 };
 
 #endif

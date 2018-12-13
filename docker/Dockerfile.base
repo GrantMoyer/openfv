@@ -216,7 +216,7 @@ RUN pip install kernda --no-cache && \
 
 # Installing glog
 RUN git clone https://github.com/google/glog.git && \
-    cd glog && \
+    cd glog && git checkout 615d0b9 &&\
     ./autogen.sh && \
     ./configure && \
     make && make install

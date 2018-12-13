@@ -122,7 +122,7 @@ ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
     NB_USER=jovyan \
     NB_UID=1000 \
-    NB_GID=100 \
+    NB_GID=1000 \
     LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
@@ -133,7 +133,8 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH \
 ADD fix-permissions /usr/local/bin/fix-permissions
 
 # Create jovyan user with UID=1000 and in the 'users' group
-RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+RUN groupadd -g $NB_GID jovyan && \
+    useradd -m -s /bin/bash -N -u $NB_UID -g $NB_GID $NB_USER && \
     mkdir -p $CONDA_DIR && \
     chown $NB_USER:$NB_GID $CONDA_DIR && \
     fix-permissions $HOME && \
@@ -240,7 +241,7 @@ RUN pip install kernda --no-cache && \
 
 # Installing glog
 RUN git clone https://github.com/google/glog.git && \
-    cd glog && \
+    cd glog && git checkout 615d0b9 &&\
     ./autogen.sh && \
     ./configure && \
     make && make install

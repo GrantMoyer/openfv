@@ -1934,11 +1934,14 @@ void saRefocus::dump_stack(string path, double zmin, double zmax, double dz, dou
         vector<Mat> stack;
 #ifndef WITHOUT_CUDA
         if (GPU_FLAG) {
+            boost::chrono::high_resolution_clock::time_point t0 = boost::chrono::high_resolution_clock::now();
             uploadSingleToGPU(f);            
             for (double z=zmin; z<=zmax; z+=dz) {
                 Mat img = refocus(z, 0, 0, 0, thresh, 0);
                 stack.push_back(img);
             }
+            boost::chrono::duration<double> t1 = boost::chrono::high_resolution_clock::now() - t0;
+            LOG(INFO) << "GPU Frame refocus took " << t1 << std::endl;
         }
 #endif
 		glfwSetWindowSize(img_size_.width, img_size_.height);

@@ -770,9 +770,9 @@ void saRefocus::initializeGPU() {
 
         LOG(INFO)<<"INITIALIZING GPU..."<<endl;
 
-        VLOG(1)<<"CUDA Enabled GPU Devices: "<<gpu::getCudaEnabledDeviceCount;
+        VLOG(1)<<"CUDA Enabled GPU Devices: "<<cuda::getCudaEnabledDeviceCount;
 
-        gpu::DeviceInfo gpuDevice(gpu::getDevice());
+        cuda::DeviceInfo gpuDevice(cuda::getDevice());
 
         VLOG(1)<<"---"<<gpuDevice.name()<<"---"<<endl;
         VLOG(1)<<"Total Memory: "<<(gpuDevice.totalMemory()/pow(1024.0,2))<<" MB";
@@ -790,7 +790,7 @@ void saRefocus::initializeSpecificGPU(int gpu) {
     
     LOG(WARNING) << "Explicitly setting GPU to device number " << gpu << ". This is an expert function!";
 
-    gpu::setDevice(gpu);
+    cuda::setDevice(gpu);
     
     if (REF_FLAG)
         if (!CORNER_FLAG)
@@ -804,7 +804,7 @@ void saRefocus::initializeSpecificGPU(int gpu) {
 void saRefocus::uploadAllToGPU() {
 
     if (!EXPERT_FLAG) {
-        gpu::DeviceInfo gpuDevice(gpu::getDevice());
+        cuda::DeviceInfo gpuDevice(cuda::getDevice());
         double free_mem_GPU = gpuDevice.freeMemory()/pow(1024.0,2);
         VLOG(1)<<"Free Memory before: "<<free_mem_GPU<<" MB";
     }
@@ -836,7 +836,7 @@ void saRefocus::uploadAllToGPU() {
     }
 
     if (!EXPERT_FLAG) {
-        gpu::DeviceInfo gpuDevice(gpu::getDevice());
+        cuda::DeviceInfo gpuDevice(cuda::getDevice());
         VLOG(1)<<"Free Memory after: "<<(gpuDevice.freeMemory()/pow(1024.0,2))<<" MB";
     }
 
@@ -932,10 +932,10 @@ void saRefocus::GPUrefocus(int live, int frame) {
 
         if (curve) {
             calc_refocus_map(x, y, i); x.convertTo(xm, CV_32FC1); y.convertTo(ym, CV_32FC1); xmap.upload(xm); ymap.upload(ym);
-            gpu::remap(array_all[frame][i], warped_[i], xmap, ymap, INTER_LINEAR);
+            cuda::remap(array_all[frame][i], warped_[i], xmap, ymap, INTER_LINEAR);
         } else {
             calc_refocus_H(i, H);
-            gpu::warpPerspective(array_all[frame][i], warped_[i], H, img_size_);
+            cuda::warpPerspective(array_all[frame][i], warped_[i], H, img_size_);
             if (SINGLE_CAM_DEBUG) {
                 Mat single_cam_img(warped_[i]);
                 cam_stacks_[i].push_back(single_cam_img.clone());
@@ -943,19 +943,19 @@ void saRefocus::GPUrefocus(int live, int frame) {
         }
 
         if (mult_) {
-            gpu::pow(warped_[i], mult_exp_, warped2_[i]);
+            cuda::pow(warped_[i], mult_exp_, warped2_[i]);
             if (i>0)
-                gpu::multiply(refocused, warped2_[i], refocused);
+                cuda::multiply(refocused, warped2_[i], refocused);
             else
                 refocused = warped2_[i].clone();
 	} else if (minlos_) {
             if (i>0)
-                gpu::min(refocused, warped_[i], refocused);
+                cuda::min(refocused, warped_[i], refocused);
             else
                 refocused = warped_[i].clone();
         } else if (!nlca_ && !nlca_fast_) {
-            gpu::multiply(warped_[i], fact_, warped2_[i]);
-            gpu::add(refocused, warped2_[i], refocused);
+            cuda::multiply(warped_[i], fact_, warped2_[i]);
+            cuda::add(refocused, warped2_[i], refocused);
         }
 
     }
@@ -988,7 +988,7 @@ void saRefocus::GPUrefocus_ref(int live, int frame) {
     for (int i=0; i<num_cams_; i++) {
 
         gpu_calc_refocus_map(xmap, ymap, z_, i, img_size_.height, img_size_.width);
-        gpu::remap(array_all[frame][i], warped_[i], xmap, ymap, INTER_LINEAR);
+        cuda::remap(array_all[frame][i], warped_[i], xmap, ymap, INTER_LINEAR);
 
         if (i==0) {
             Mat M;
@@ -996,8 +996,8 @@ void saRefocus::GPUrefocus_ref(int live, int frame) {
             ymap.download(M); // writeMat(M, "../temp/ymap.txt");
         }
 
-        gpu::multiply(warped_[i], fact_, warped2_[i]);
-        gpu::add(refocused, warped2_[i], refocused);
+        cuda::multiply(warped_[i], fact_, warped2_[i]);
+        cuda::add(refocused, warped2_[i], refocused);
 
     }
 
@@ -1025,7 +1025,7 @@ void saRefocus::GPUrefocus_ref_corner(int live, int frame) {
     for (int i=0; i<num_cams_; i++) {
 
         calc_ref_refocus_H(i, H);
-        gpu::warpPerspective(array_all[frame][i], warped_[i], H, img_size_);
+        cuda::warpPerspective(array_all[frame][i], warped_[i], H, img_size_);
 
         if (SINGLE_CAM_DEBUG) {
             Mat single_cam_img(warped_[i]);
@@ -1033,19 +1033,19 @@ void saRefocus::GPUrefocus_ref_corner(int live, int frame) {
         }
 
         if (mult_) {
-            gpu::pow(warped_[i], mult_exp_, warped2_[i]);
+            cuda::pow(warped_[i], mult_exp_, warped2_[i]);
             if (i>0)
-                gpu::multiply(refocused, warped2_[i], refocused);
+                cuda::multiply(refocused, warped2_[i], refocused);
             else
                 refocused = warped2_[i].clone();
         } else if (minlos_) {
             if (i>0)
-                gpu::min(refocused, warped_[i], refocused);
+                cuda::min(refocused, warped_[i], refocused);
             else
                 refocused = warped_[i].clone();
         } else if (!nlca_ && !nlca_fast_) {
-            gpu::multiply(warped_[i], fact_, warped2_[i]);
-            gpu::add(refocused, warped2_[i], refocused);
+            cuda::multiply(warped_[i], fact_, warped2_[i]);
+            cuda::add(refocused, warped2_[i], refocused);
         }
 
     }
@@ -2117,12 +2117,12 @@ void saRefocus::threshold_image(GpuMat &refocused) {
 
     if (STDEV_THRESH) {
         Scalar mean, stdev;
-        gpu::multiply(refocused, Scalar(255, 255, 255), temp); temp.convertTo(temp2, CV_8UC1);
-        gpu::meanStdDev(temp2, mean, stdev);
+        cuda::multiply(refocused, Scalar(255, 255, 255), temp); temp.convertTo(temp2, CV_8UC1);
+        cuda::meanStdDev(temp2, mean, stdev);
         VLOG(3)<<"Thresholding at: "<<mean[0]+thresh_*stdev[0];
-        gpu::threshold(refocused, refocused, (mean[0]+thresh_*stdev[0])/255, 0, THRESH_TOZERO);
+        cuda::threshold(refocused, refocused, (mean[0]+thresh_*stdev[0])/255, 0, THRESH_TOZERO);
     } else {
-        gpu::threshold(refocused, refocused, thresh_, 0, THRESH_TOZERO);
+        cuda::threshold(refocused, refocused, thresh_, 0, THRESH_TOZERO);
     }
 
 }
@@ -2236,7 +2236,7 @@ void saRefocus::setIntImgMode(int flag) {
 
 void saRefocus::setGpuDevice(int id) {
 
-    gpu::setDevice(id);
+    cuda::setDevice(id);
 
 }
 

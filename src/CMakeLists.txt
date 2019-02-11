@@ -39,8 +39,6 @@ else()
   target_link_libraries(openfv ${LIBS})
 endif()
 
-set(CMAKE_INSTALL_PREFIX "/usr/local")
-
 if(BUILD_PYTHON)
   
   execute_process(COMMAND ${PYTHON_EXEC} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)

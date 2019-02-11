@@ -62,5 +62,7 @@ namespace libtiff {
 #include <boost/chrono.hpp>
 
 // Python library
+#ifdef WITH_PYTHON
 #include <Python.h>
+#endif
 

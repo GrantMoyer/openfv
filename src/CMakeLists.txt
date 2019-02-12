@@ -21,7 +21,11 @@
 # You should have received a copy of the GNU General Public License version 2 along with
 # OpenFV. If not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html.
 
-set (SRC_TO_BUILD ${PROJECT_SOURCE_DIR}/src/modules/refocusing.cpp)
+set (SRC_TO_BUILD ${PROJECT_SOURCE_DIR}/src/modules/refocusing.cpp
+                  ${PROJECT_SOURCE_DIR}/src/modules/tools.cpp
+                  ${PROJECT_SOURCE_DIR}/src/modules/parse_settings.cpp
+                  ${PROJECT_SOURCE_DIR}/src/modules/rendering.cpp)
+
 
 if (BUILD_TRACKING)
   set (SRC_TO_BUILD ${SRC_TO_BUILD} ${PROJECT_SOURCE_DIR}/src/modules/tracking.cpp)

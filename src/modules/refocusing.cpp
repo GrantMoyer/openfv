@@ -32,7 +32,7 @@
 // -------------------------------------------------------
 // -------------------------------------------------------
 
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 #include "refocusing.h"
 #include "tools.h"
@@ -171,14 +171,17 @@ void saRefocus::initGLFW() {
         LOG(FATAL) << "FAILED TO INITIALIZE GLFW!";
         exit(1);
     }
-    if(!glfwOpenWindow(1, 1, 0, 0, 0, 0, 0, 0, GLFW_WINDOW)) {
+
+    if(!(win = glfwCreateWindow(1, 1, "Scratch Buffer", NULL, NULL))) {
         LOG(FATAL) << "FAILED TO OPEN GLFW WINDOW!";
 	    glfwTerminate();
         exit(1);
     }
-    glfwSetWindowTitle("Scratch Buffer");
+    glfwMakeContextCurrent(win);
     int major, minor, rev;
-    glfwGetGLVersion(&major, &minor, &rev);
+    major = glfwGetWindowAttrib(win, GLFW_CONTEXT_VERSION_MAJOR);
+    minor = glfwGetWindowAttrib(win, GLFW_CONTEXT_VERSION_MINOR);
+    rev = glfwGetWindowAttrib(win, GLFW_CONTEXT_REVISION);
     LOG(INFO)<<"INITIALIZED GLFW, OPENGL VERSION "
              << major << '.' << minor << '-' << rev << "...";
 }
@@ -1357,15 +1360,14 @@ void saRefocus::CPUrefocus(int live, int frame) {
 
     for (int r = 0; r < 3; ++r) {
 	    for (int c = 0; c < 3; ++c) {
-		    Htbuf[c][r] = H.at<double>(r, c);
-	    }
+	    Htbuf[c][r] = H.at<double>(r, c);
+		    }
     }
     Htbuf[3][3] = 1.0;
 
-	double t = glfwGetTime();
     // Get window size (may be different than the requested size)
-	int width, height;
-    glfwGetWindowSize( &width, &height );
+    int width, height;
+    glfwGetWindowSize(win, &width, &height );
 
 
     // Special case: avoid division by zero below
@@ -1431,10 +1433,10 @@ void saRefocus::CPUrefocus(int live, int frame) {
 	    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         calc_refocus_H(i, H);
 	    for (int r = 0; r < 3; ++r) {
-		    for (int c = 0; c < 3; ++c) {
-			    Htbuf[c][r] = H.at<double>(r, c);
+	    for (int c = 0; c < 3; ++c) {
+		    Htbuf[c][r] = H.at<double>(r, c);
+			    }
 		    }
-	    }
         glLoadMatrixf((GLfloat *) Htbuf);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         glBegin( GL_QUADS );
@@ -1467,7 +1469,7 @@ void saRefocus::CPUrefocus(int live, int frame) {
 
 //    threshold(cpurefocused, cpurefocused, thresh_, 0, THRESH_TOZERO);
 
-    glfwSwapBuffers();
+    glfwSwapBuffers(win);
 
 
     Mat ref(1292, 964, CV_8UC3);
@@ -1944,8 +1946,8 @@ void saRefocus::dump_stack(string path, double zmin, double zmax, double dz, dou
             LOG(INFO) << "GPU Frame refocus took " << t1 << std::endl;
         }
 #endif
-		glfwSetWindowSize(img_size_.width, img_size_.height);
-	    textures = new GLuint[num_cams_];
+	glfwSetWindowSize(win, img_size_.width, img_size_.height);
+		    textures = new GLuint[num_cams_];
         glGenTextures(num_cams_, &textures[0]);
 	    for (int i = 0; i < num_cams_; ++i) {
 	        glBindTexture(GL_TEXTURE_2D, textures[i]);

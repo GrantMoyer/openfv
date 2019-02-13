@@ -48,7 +48,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 using namespace cv;
@@ -227,6 +227,7 @@ class saRefocus {
 
     // initialize GLFW and OpenGL context
     void initGLFW();
+    GLFWwindow *win;
 
     // Refocusing result
     Mat result_;

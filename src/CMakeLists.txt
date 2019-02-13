@@ -26,6 +26,7 @@ set (SRC_TO_BUILD ${PROJECT_SOURCE_DIR}/src/modules/refocusing.cpp
                   ${PROJECT_SOURCE_DIR}/src/modules/parse_settings.cpp
                   ${PROJECT_SOURCE_DIR}/src/modules/rendering.cpp)
 
+
 if (BUILD_TRACKING)
   set (SRC_TO_BUILD ${SRC_TO_BUILD} ${PROJECT_SOURCE_DIR}/src/modules/tracking.cpp)
 else()
@@ -42,8 +43,6 @@ else()
   target_link_libraries(openfv ${LIBS})
 endif()
 
-set(CMAKE_INSTALL_PREFIX "/usr/local")
-
 if(BUILD_PYTHON)
   
   execute_process(COMMAND ${PYTHON_EXEC} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -52,17 +51,9 @@ if(BUILD_PYTHON)
 
   set (PYTHON_PROPS Boost_USE_STATIC_RUNTIME OFF Boost_USE_MULTITHREADING ON LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/openfv)
 
-  add_library(rendering SHARED ${PROJECT_SOURCE_DIR}/src/modules/rendering.cpp)
-  set_target_properties(rendering PROPERTIES ${PYTHON_PROPS} PREFIX "")
-  target_link_libraries(rendering ${OFV_LIBS} ${LIBS})
-
   add_library(refocusing SHARED ${PROJECT_SOURCE_DIR}/src/modules/refocusing.cpp)
   set_target_properties(refocusing PROPERTIES ${PYTHON_PROPS} PREFIX "")
   target_link_libraries(refocusing ${OFV_LIBS} ${LIBS})
-
-  add_library(tools SHARED ${PROJECT_SOURCE_DIR}/src/modules/tools.cpp)
-  set_target_properties(tools PROPERTIES ${PYTHON_PROPS} PREFIX "")
-  target_link_libraries(tools ${OFV_LIBS} ${LIBS})
 
   if(BUILD_TRACKING)
     add_library(tracking SHARED ${PROJECT_SOURCE_DIR}/src/modules/tracking.cpp)
@@ -74,26 +65,11 @@ if(BUILD_PYTHON)
   # set_target_properties(localization PROPERTIES ${PYTHON_PROPS} PREFIX "")
   # target_link_libraries(localization ${LIBS})
 
-  include(cmake/boost-python.cmake)
-
-  # Build np<=>opencv converter library
-  include_directories(${PROJECT_SOURCE_DIR}/include)
-  boost_python_module(np_opencv_converter numpy-opencv-converter/np_opencv_converter.cpp numpy-opencv-converter/conversion.cpp)
-  # set_target_properties(np_opencv_converter PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/openfv)
-  target_link_libraries(np_opencv_converter boost_system boost_python ${OpenCV_LIBS})
-  
-  # Build test library
-  boost_python_module(np_opencv_module numpy-opencv-converter/np_opencv_module.cpp)
-  set_target_properties(np_opencv_module PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/openfv)
-  target_link_libraries(np_opencv_module boost_system boost_python np_opencv_converter ${OpenCV_LIBS})
-
-  install(CODE "file(WRITE ${PROJECT_SOURCE_DIR}/bin/openfv/__init__.py \"import np_opencv_module\n\")")
-
   if(BUILD_TRACKING)
-    install(TARGETS rendering refocusing tools np_opencv_converter np_opencv_module tracking
+    install(TARGETS refocusing 
       DESTINATION ${CMAKE_PYTHON_INSTALL_PREFIX})
   else()
-    install(TARGETS rendering refocusing tools np_opencv_converter np_opencv_module
+    install(TARGETS refocusing 
       DESTINATION ${CMAKE_PYTHON_INSTALL_PREFIX})
   endif()
 
@@ -101,7 +77,7 @@ if(BUILD_PYTHON)
 
 endif()
 
-install(TARGETS openfv np_opencv_converter DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS openfv DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 if (WITH_CUDA)
   install(TARGETS cuda_openfv DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

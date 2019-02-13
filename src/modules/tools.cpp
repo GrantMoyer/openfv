@@ -660,7 +660,7 @@ string generate_unique_path(string path) {
 
     string new_path;
     for (int i=0; i<999; i++) {
-        char postfix[3];
+        char postfix[4];
         sprintf(postfix, "%03d", i);
         new_path = path + "_" + postfix;
         if (!boost::filesystem::exists(new_path))
@@ -1099,6 +1099,7 @@ Mat mp4Reader::get_frame(int n) {
 }
 
 // Python wrapper
+#ifdef WITH_PYTHON
 BOOST_PYTHON_MODULE(tools) {
 
     using namespace boost::python;
@@ -1119,3 +1120,4 @@ BOOST_PYTHON_MODULE(tools) {
     ;
 
 }
+#endif

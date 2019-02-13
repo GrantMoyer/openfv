@@ -161,7 +161,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 # Subdirectories
 add_subdirectory(src)
 
-add_executable(sa_reconstruct ${PROJECT_SOURCE_DIR}/src/tools/sa_reconstruct.cpp)
-target_link_libraries(sa_reconstruct ${LIBS} ${OFV_LIBS})
-
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/openfv/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/openfv)

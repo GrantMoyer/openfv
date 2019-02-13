@@ -25,7 +25,6 @@
 #include <cv.h>
 #include <highgui.h>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
 
 // Standard headers
 #include <iostream>
@@ -63,5 +62,7 @@ namespace libtiff {
 #include <boost/chrono.hpp>
 
 // Python library
+#ifdef WITH_PYTHON
 #include <Python.h>
+#endif
 

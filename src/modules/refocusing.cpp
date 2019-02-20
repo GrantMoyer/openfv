@@ -32,6 +32,7 @@
 // -------------------------------------------------------
 // -------------------------------------------------------
 
+#include <iomanip>
 #include <GLFW/glfw3.h>
 
 #include "refocusing.h"
@@ -166,7 +167,13 @@ saRefocus::saRefocus(refocus_settings settings):
     initGLFW();
 }
 
+void handle_glfw_error(int e, const char* desc) {
+    LOG(INFO) << "GLFW ERROR: 0x" << hex << e << ": " << desc;
+}
+
 void saRefocus::initGLFW() {
+    glfwSetErrorCallback(handle_glfw_error);
+
     if (!glfwInit()) {
         LOG(FATAL) << "FAILED TO INITIALIZE GLFW!";
         exit(1);
